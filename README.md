@@ -12,16 +12,19 @@ numpy>=1.15
 
 # Training and Testing
 cd NYC-OD
+
 python HSTN_NY_train_test.py
 
 or
 
 cd HAIKOU-OD
+
 python HSTN_HK_train_test.py
 
 or
 
 cd SHENZHEN-OD
+
 python HSTN_SZ_train_test.py
 
 # Data Source

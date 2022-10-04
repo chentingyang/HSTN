@@ -28,6 +28,5 @@ cd SHENZHEN-OD
 python HSTN_SZ_train_test.py
 
 # Data Source
-The NYC OD data is provided from https://ieeexplore.ieee.org/abstract/document/8720246 Contextualized Spatial-Temporal Network for Taxi Origin-Destination Demand Prediction
-
-The HAIKOU OD data is provided  from https://www.datafountain.cn/competitions/360/datasets by Didi Chuxing. Due to confidentiality requirements, the data source is now closed.
+The NYC OD data is provided from https://ieeexplore.ieee.org/abstract/document/8720246.
+The HAIKOU OD data is provided from https://www.datafountain.cn/competitions/360/datasets by Didi Chuxing. Due to confidentiality requirements, the data source is now closed.

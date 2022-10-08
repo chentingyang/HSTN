@@ -103,7 +103,7 @@ def load_data(odmax, timestep, scaler=True):
 
     sets = len(oddata.keys())
 
-    # generate semantic neb_matrix
+    # generate semantic neb_matrix (based on the bidirectional traffic flow)
     data = np.array(oddata[0])
     data = np.reshape(data, (-1, N, N))
     semantic = []

@@ -35,7 +35,7 @@ model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, i
 model = model.call()
 
 # split train / test
-X, Y, _, semantic, geo, weather = load_data(odmax, timestep)
+X, Y, semantic, geo, weather = load_data(odmax, timestep)
 geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))  # (len, t, N, N)
 len_train = (X.shape[0] - len_test) // batch_size * batch_size  # 14528
 

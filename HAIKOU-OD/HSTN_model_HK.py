@@ -256,6 +256,7 @@ class Encoder(tf.keras.Model):
         last_sequence = data[:, -1, :, :]
         last_sequence = tf.reshape(last_sequence, (-1, self.N))
 
+        # inherent relationship unit
         attn_out = []
         for i in range(self.timestep):
             x = data[:, i, :, :]
@@ -268,7 +269,7 @@ class Encoder(tf.keras.Model):
         attn_out = tf.keras.layers.Dropout(self.rate)(attn_out)
 
         # sequence_GCN
-        # neighborhood relationship unit
+        # adjacency relationship unit
         x1_nebh = Sequence_GCN(data, geo_neighbor, self.dim)
         x2_nebh = Sequence_GCN(x1_nebh, geo_neighbor, self.dim)
         nebh = tf.keras.layers.Dropout(self.rate)(x2_nebh)
@@ -303,7 +304,7 @@ class Encoder(tf.keras.Model):
     def init_hidden_state(self):
         return tf.zeros(shape=(Batch_Size, self.dims))
 
-
+# dynamic learning unit 
 class Decoder(tf.keras.Model):
 
     def __init__(self, out_dim, N, h, w, rate=0.3):
@@ -355,64 +356,65 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         self.encoder = Encoder(N, h, w, self.dim, rate, timestep)
         self.decoder = Decoder(self.dim, N, h, w, rate)
         self.attn_layers = [AttnLayer(self.N, self.N, self.w, self.rate) for _ in
-                            range(2)]  # Long-term sequence relationship unit
+                            range(2)]  
         self.out_seq_len = out_seq_len
         self.is_seq = is_seq
         self.is_big = is_big
 
     def call(self):
         oddata = tf.keras.Input(shape=(self.timestep, self.N, self.h, self.w))
+        weather = tf.keras.Input(shape=(self.timestep, Weather_Dim))
+        sem_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
+        geo_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
 
-    weather = tf.keras.Input(shape=(self.timestep, Weather_Dim))
-    sem_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
-    geo_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
+        # static learning unit
+        periodic_data = tf.reshape(oddata, (-1, self.timestep, self.N, self.N))
+        periodic_data = tf.reshape(tf.transpose(periodic_data, [0, 2, 1, 3]), (-1, self.timestep, self.N))
+        for i in range(2):
+            periodic_data = self.attn_layers[i](periodic_data, training=True)
 
-    periodic_data = tf.reshape(oddata, (-1, self.timestep, self.N, self.N))
-    periodic_data = tf.reshape(tf.transpose(periodic_data, [0, 2, 1, 3]), (-1, self.timestep, self.N))
-    for i in range(2):
-        periodic_data = self.attn_layers[i](periodic_data, training=True)
+        periodic_output = tf.reduce_sum(periodic_data, axis=1)
 
-    periodic_output = tf.reduce_sum(periodic_data, axis=1)
+        enc_output, enc_state, last_seq = self.encoder.call(oddata, weather, sem_neighbor, geo_neighbor)
 
-    enc_output, enc_state, last_seq = self.encoder.call(oddata, weather, sem_neighbor, geo_neighbor)
+        dec_state = enc_state
+        dec_input = last_seq
+        outlist = []
 
-    dec_state = enc_state
-    dec_input = last_seq
-    outlist = []
+        # dynamic
+        for t in range(self.out_seq_len):
+            predictions, dec_state, _ = self.decoder.call(dec_input, periodic_output, dec_state, enc_output)
 
-    for t in range(self.out_seq_len):
-        predictions, dec_state, _ = self.decoder.call(dec_input, periodic_output, dec_state, enc_output)
+            outlist.append(predictions)
 
-        outlist.append(predictions)
+            dec_input = tf.reshape(predictions, (-1, self.N))
 
-        dec_input = tf.reshape(predictions, (-1, self.N))
+        output = tf.stack(outlist, axis=1)
+        if output.shape[1] == 1:  # single-step
+            output = output[:, 0, :, :, :]
 
-    output = tf.stack(outlist, axis=1)
-    if output.shape[1] == 1:  # single-step
-        output = output[:, 0, :, :, :]
+        model = tf.keras.Model(inputs=[oddata, weather, sem_neighbor, geo_neighbor], outputs=output)
+        if self.is_seq == False:  # single-step
+            if self.is_big == True:  # large map
+                model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
+                            metrics=[Metrics_big.rmse, Metrics_big.mae,
+                                    Metrics_big.o_rmse, Metrics_big.o_mae,
+                                    Metrics_big.d_rmse, Metrics_big.d_mae])
+            else:  # small map
+                model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
+                            metrics=[Metrics_small.rmse, Metrics_small.mae,
+                                    Metrics_small.o_rmse, Metrics_small.o_mae,
+                                    Metrics_small.d_rmse, Metrics_small.d_mae])
+        else:  # multi-steps
+            if self.is_big == True:
+                model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
+                            metrics=[Metrics_seq_big.rmse, Metrics_seq_big.mae,
+                                    Metrics_seq_big.o_rmse, Metrics_seq_big.o_mae,
+                                    Metrics_seq_big.d_rmse, Metrics_seq_big.d_mae])
+            else:
+                model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
+                            metrics=[Metrics_seq_small.rmse, Metrics_seq_small.mae,
+                                    Metrics_seq_small.o_rmse, Metrics_seq_small.o_mae,
+                                    Metrics_seq_small.d_rmse, Metrics_seq_small.d_mae])
 
-    model = tf.keras.Model(inputs=[oddata, weather, sem_neighbor, geo_neighbor], outputs=output)
-    if self.is_seq == False:  # single-step
-        if self.is_big == True:  # large map
-            model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                          metrics=[Metrics_big.rmse, Metrics_big.mae,
-                                   Metrics_big.o_rmse, Metrics_big.o_mae,
-                                   Metrics_big.d_rmse, Metrics_big.d_mae])
-        else:  # small map
-            model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                          metrics=[Metrics_small.rmse, Metrics_small.mae,
-                                   Metrics_small.o_rmse, Metrics_small.o_mae,
-                                   Metrics_small.d_rmse, Metrics_small.d_mae])
-    else:  # multi-steps
-        if self.is_big == True:
-            model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                          metrics=[Metrics_seq_big.rmse, Metrics_seq_big.mae,
-                                   Metrics_seq_big.o_rmse, Metrics_seq_big.o_mae,
-                                   Metrics_seq_big.d_rmse, Metrics_seq_big.d_mae])
-        else:
-            model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                          metrics=[Metrics_seq_small.rmse, Metrics_seq_small.mae,
-                                   Metrics_seq_small.o_rmse, Metrics_seq_small.o_mae,
-                                   Metrics_seq_small.d_rmse, Metrics_seq_small.d_mae])
-
-    return model
+        return model

@@ -36,11 +36,11 @@ def generate_dynamic_adj_matrix(data):
 def load_data(odmax, timestep, scaler=True):
     '''
         expectation:
-        o = (sample, timestep, map_height * map_width, map_height, map_width), od data sequence
-        y = (sample, map_height * map_width, map_height, map_width), ground_truth
+        o = (sample, timestep, num_nodes, num_nodes), od data sequence
+        y = (sample, num_nodes, num_nodes), ground_truth
         w = (sample, timestep, ?), meterological data sequence
-        s = (timestep, map_height * map_width, map_height * map_width), smeantic neb_matrix sequence
-        geo = (map_height * map_width, map_height * map_width), adjacency neb_matrix
+        s = (timestep, num_nodes, num_nodes), semantic neb_matrix sequence
+        geo = (num_nodes, num_nodes), adjacency neb_matrix
     '''
     oddata = '../data/oddata.npy'
     weather = '../data/weatherdata.npy'
@@ -59,7 +59,7 @@ def load_data(odmax, timestep, scaler=True):
     print("generate sequence")
     print("*************************")
 
-    # generate semantic neighbors
+    # generate semantic neb_matrix
     data = np.array(oddata)
     data = np.reshape(data, (-1, N, N))
 
@@ -68,12 +68,12 @@ def load_data(odmax, timestep, scaler=True):
         semantic.append(generate_dynamic_adj_matrix(graph))
     semantic = np.array(semantic)  # (len, N, N)
 
-    # generate geographic neib
+    # generate adjacency neb_matrix
     geo = generate_adj_matrix(matrix)
 
     oddata = {0: oddata}
     weather = {0: weather}
-    if scaler: # standardscaler
+    if scaler:
         for i in oddata.keys():
             oddata[i] = oddata[i] * 2.0 / odmax - 1.0  # (-1, 1)
             # oddata[i] = (oddata[i] - mean) / std  #standardscaler

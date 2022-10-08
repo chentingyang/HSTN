@@ -59,7 +59,7 @@ def load_data(odmax, timestep, scaler=True):
     print("generate sequence")
     print("*************************")
 
-    # generate semantic neb_matrix
+    # generate semantic neb_matrix (based on the bidirectional traffic flow)
     data = np.array(oddata)
     data = np.reshape(data, (-1, N, N))
 

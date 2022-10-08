@@ -252,6 +252,7 @@ class Encoder(tf.keras.Model):
         last_sequence = data[:, -1, :, :]
         last_sequence = tf.reshape(last_sequence, (-1, self.N))
 
+        # inherent relationship unit
         attn_data = tf.keras.layers.Dense(self.dim, activation='relu')(data)
         attn_out = []
         for i in range(self.timestep):
@@ -264,27 +265,31 @@ class Encoder(tf.keras.Model):
         attn_out = tf.stack(attn_out, axis=1)
 
         # sequence_GCN
+        # adjacency relationship unit
         x1_nebh = Sequence_GCN(data, geo_neighbor, self.dim)
         x2_nebh = Sequence_GCN(x1_nebh, geo_neighbor, self.dim)
         nebh = tf.keras.layers.Dropout(self.rate)(x2_nebh)
 
+        # flow relationship unit
         x1_seman = Sequence_GCN(data, sem_neighbor, self.dim)
         x2_seman = Sequence_GCN(x1_seman, sem_neighbor, self.dim)
         seman = tf.keras.layers.Dropout(self.rate)(x2_seman)
 
+        # concat&fc
         sequence_out = tf.concat([nebh, seman], axis=-1)
         sequence_out = tf.keras.layers.Dense(self.dim)(sequence_out)
         sequence_out = tf.keras.layers.Dropout(self.rate)(sequence_out)
 
+        # weather embedding
         weath = tf.keras.layers.Dense(10, activation='relu')(weather)
         weath = tf.keras.layers.Dense(self.dim * self.N, activation='relu')(weath)
         weath = tf.keras.layers.Dropout(self.rate)(weath)
         weather_data = tf.reshape(weath, (-1, self.timestep, self.N, self.dim))
 
         # add(GCN_out, weather, attn_out)
-        # metro data is expected to igmore the influence of attention
-        # embedding = tf.keras.layers.add([sequence_out, weather_data, attn_out])#(bs, seq_len, N, out_dim)
-        embedding = tf.keras.layers.add([sequence_out, weather_data])
+        # HSTN performs better on metro data while ignoring the influence of attention
+        # embedding = tf.keras.layers.add([sequence_out, weather_data])
+        embedding = tf.keras.layers.add([sequence_out, weather_data, attn_out])
         embedding = tf.reshape(tf.transpose(embedding, [0, 2, 1, 3]), (-1, self.timestep, self.dim))
 
         output, state = self.gru(embedding)
@@ -293,7 +298,7 @@ class Encoder(tf.keras.Model):
     def init_hidden_state(self):
         return tf.zeros(shape=(Batch_Size, self.dims))
 
-
+# dynamic learning unit
 class Decoder(tf.keras.Model):
 
     def __init__(self, out_dim, N, rate=0.3):
@@ -312,21 +317,21 @@ class Decoder(tf.keras.Model):
 
             context_vector, attention_weights = self.attention.call(dec_state, enc_output)
 
-        # concat&fc
-        dense_inp = tf.concat([x, periodic_input], axis=1)
-        dense_out = tf.keras.layers.Dense(self.N, activation='relu')(dense_inp)
+            # concat&fc
+            dense_inp = tf.concat([x, periodic_input], axis=1)
+            dense_out = tf.keras.layers.Dense(self.N, activation='relu')(dense_inp)
 
-        gru_inp = tf.concat([tf.expand_dims(context_vector, 1), tf.expand_dims(dense_out, 1)], axis=-1)
+            gru_inp = tf.concat([tf.expand_dims(context_vector, 1), tf.expand_dims(dense_out, 1)], axis=-1)
 
-        gru_out, state = self.gru(gru_inp)
+            gru_out, state = self.gru(gru_inp)
 
-        gru_out = tf.reshape(gru_out, (-1, gru_out.shape[2]))
+            gru_out = tf.reshape(gru_out, (-1, gru_out.shape[2]))
 
-        gru_out = tf.keras.layers.Dropout(self.rate)(gru_out)
-        output = tf.keras.layers.Dense(self.N, activation='tanh')(gru_out)
-        output = tf.reshape(output, (-1, self.N, self.h, self.w))
+            gru_out = tf.keras.layers.Dropout(self.rate)(gru_out)
+            output = tf.keras.layers.Dense(self.N, activation='tanh')(gru_out)
+            output = tf.reshape(output, (-1, self.N, self.h, self.w))
 
-        return output, state, attention_weights
+            return output, state, attention_weights
 
 
 class AttnSeq2Seq(tf.keras.layers.Layer):
@@ -345,7 +350,7 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         self.encoder = Encoder(N, self.heads, self.dim, self.rate, self.timestep)
         self.decoder = Decoder(self.dim, N, rate)
         self.attn_layers = [AttnLayer(self.N, self.N, self.heads, self.rate) for _ in
-                            range(2)]  # Long-term sequence relationship unit
+                            range(2)]  
 
     def call(self):
         data = tf.keras.Input(shape=(self.timestep, self.N, self.N))
@@ -353,6 +358,7 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         sem_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
         geo_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
 
+        # static learning unit
         periodic_data = data
         periodic_data = tf.reshape(tf.transpose(periodic_data, [0, 2, 1, 3]), (-1, self.timestep, self.N))
 
@@ -371,6 +377,7 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
 
         outlist = []
 
+        # dynamic
         for t in range(self.out_seq_len):
             predictions, dec_state, _ = self.decoder.call(dec_input, periodic_output, dec_state, enc_output)
 

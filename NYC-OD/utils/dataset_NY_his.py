@@ -80,10 +80,11 @@ def generate_dynamic_adj_matrix(data):
 def load_data(odmax, timestep, scaler=True):
     '''
         expectation:
-        X = (sample, timestep, map_height * map_width, map_height, map_width)
-        Y = (sample, map_height * map_width, map_height, map_width)
-        weather = (sample, timestep, ?)
-        meta = (sample, timestep, ?)
+        o = (sample, timestep, map_height * map_width, map_height, map_width), od data sequence
+        y = (sample, map_height * map_width, map_height, map_width), ground_truth
+        w = (sample, timestep, ?), meterological data sequence
+        s = (timestep, map_height * map_width, map_height * map_width), semantic neb_matrix sequence
+        geo = (map_height * map_width, map_height * map_width), adjacency neb_matrix
     '''
     oddata = '../data/oddata.npy'
     weather = '../data/weather.npy'
@@ -103,7 +104,7 @@ def load_data(odmax, timestep, scaler=True):
 
     sets = len(oddata.keys())
 
-    # generate semantic neighbors
+    # generate semantic neb_matrix
     data = np.array(oddata[0])
     data = np.reshape(data, (-1, N, N))
     semantic = []
@@ -112,7 +113,7 @@ def load_data(odmax, timestep, scaler=True):
 
     semantic = np.array(semantic)
 
-    # generate geographic neib
+    # generate geographic neb_matrix
     geo = generate_adj_matrix()
 
     if scaler:
@@ -124,7 +125,6 @@ def load_data(odmax, timestep, scaler=True):
     w = []
     y = []
     s = []
-    n = []
 
     for i in oddata.keys():
         oddata_set = oddata[i]
@@ -132,14 +132,11 @@ def load_data(odmax, timestep, scaler=True):
 
         o.append(np.concatenate([oddata_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
         y.append(oddata_set[T + timestep:, ...])
-        n.append(oddata_set[timestep:-T, ...])
         w.append(np.concatenate([weather_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
         s.append(np.concatenate([semantic[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
     o = np.concatenate(o)
     y = np.concatenate(y)
-    n = np.concatenate(n)
-
     w = np.concatenate(w)
     s = np.concatenate(s)
 
@@ -147,8 +144,4 @@ def load_data(odmax, timestep, scaler=True):
     print("generate sequence done")
     print("*************************")
 
-    return o, y, n, s, geo, w
-
-
-if __name__ == "__main__":
-    load_data(241, 5)
+    return o, y, s, geo, w

@@ -2,7 +2,7 @@
 Origin-Destination Traffic Prediction based on Hybrid Spatio-Temporal Network
 
 # Requirements
-Keras>=2.1
+keras>=2.1
 
 pandas>=0.17
 

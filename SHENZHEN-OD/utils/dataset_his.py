@@ -36,10 +36,11 @@ def generate_dynamic_adj_matrix(data):
 def load_data(odmax, timestep, scaler=True):
     '''
         expectation:
-        X = (sample, timestep, map_height * map_width, map_height, map_width)
-        Y = (sample, map_height * map_width, map_height, map_width)
-        weather = (sample, timestep, ?)
-        meta = (sample, timestep, ?)
+        o = (sample, timestep, map_height * map_width, map_height, map_width), od data sequence
+        y = (sample, map_height * map_width, map_height, map_width), ground_truth
+        w = (sample, timestep, ?), meterological data sequence
+        s = (timestep, map_height * map_width, map_height * map_width), smeantic neb_matrix sequence
+        geo = (map_height * map_width, map_height * map_width), adjacency neb_matrix
     '''
     oddata = '../data/oddata.npy'
     weather = '../data/weatherdata.npy'
@@ -72,14 +73,13 @@ def load_data(odmax, timestep, scaler=True):
 
     oddata = {0: oddata}
     weather = {0: weather}
-    if scaler:
+    if scaler: # standardscaler
         for i in oddata.keys():
             oddata[i] = oddata[i] * 2.0 / odmax - 1.0  # (-1, 1)
             # oddata[i] = (oddata[i] - mean) / std  #standardscaler
 
     o = []
     w = []
-    n = []
     y = []
     s = []
 
@@ -89,7 +89,6 @@ def load_data(odmax, timestep, scaler=True):
 
         o.append(np.concatenate([oddata_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
         y.append(oddata_set[T + timestep:, ...])
-        n.append(oddata_set[timestep:-T, ...])
         w.append(np.concatenate([weather_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
         s.append(np.concatenate([semantic[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
@@ -97,10 +96,9 @@ def load_data(odmax, timestep, scaler=True):
     y = np.concatenate(y)
     w = np.concatenate(w)
     s = np.concatenate(s)
-    n = np.concatenate(n)
 
     print("*************************")
     print("generate sequence done")
     print("*************************")
 
-    return o, y, w, s, geo, n
+    return o, y, w, s, geo

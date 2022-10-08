@@ -253,6 +253,7 @@ class Encoder(tf.keras.Model):
         last_sequence = data[:, -1, :, :]
         last_sequence = tf.reshape(last_sequence, (-1, self.N))
 
+        # inherent relationship unit
         attn_out = []
         for i in range(self.timestep):
             x = data[:, i, :, :]
@@ -265,12 +266,12 @@ class Encoder(tf.keras.Model):
         attn_out = tf.keras.layers.Dropout(self.rate)(attn_out)
 
         # sequence_GCN
-        # neighborhood relationship unit
+        # adjacency relationship unit
         x1_nebh = Sequence_GCN(data, geo_neighbor, self.dim)
         x2_nebh = Sequence_GCN(x1_nebh, geo_neighbor, self.dim)
         nebh = tf.keras.layers.Dropout(self.rate)(x2_nebh)
 
-        # flow relationship unit
+        # semantic relationship unit
         x1_seman = Sequence_GCN(data, sem_neighbor, self.dim)
         x2_seman = Sequence_GCN(x1_seman, sem_neighbor, self.dim)
         seman = tf.keras.layers.Dropout(self.rate)(x2_seman)
@@ -300,7 +301,7 @@ class Encoder(tf.keras.Model):
     def init_hidden_state(self):
         return tf.zeros(shape=(Batch_Size, self.dims))
 
-
+# dynamic leaning unit
 class Decoder(tf.keras.Model):
 
     def __init__(self, out_dim, N, h, w, rate=0.3):
@@ -361,6 +362,7 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         sem_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
         geo_neighbor = tf.keras.Input(shape=(self.timestep, self.N, self.N))
 
+        # static learning unit
         periodic_data = tf.reshape(oddata, (-1, self.timestep, self.N, self.N))
         periodic_data = tf.reshape(tf.transpose(periodic_data, [0, 2, 1, 3]), (-1, self.timestep, self.N))
         for i in range(2):
@@ -374,6 +376,7 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         dec_input = last_seq
         outlist = []
 
+        # dynamic
         for t in range(self.out_seq_len):
             predictions, dec_state, _ = self.decoder.call(dec_input, periodic_output, dec_state, enc_output)
 

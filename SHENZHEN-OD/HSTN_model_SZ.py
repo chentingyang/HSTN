@@ -329,7 +329,7 @@ class Decoder(tf.keras.Model):
 
             gru_out = tf.keras.layers.Dropout(self.rate)(gru_out)
             output = tf.keras.layers.Dense(self.N, activation='tanh')(gru_out)
-            output = tf.reshape(output, (-1, self.N, self.h, self.w))
+            output = tf.reshape(output, (-1, self.N, self.N))
 
             return output, state, attention_weights
 

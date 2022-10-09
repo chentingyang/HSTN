@@ -9,14 +9,9 @@ import HSTN_model_SZ
 import pysnooper
 import os
 
-
 config = ConfigProto()
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
-
-
-
-
 
 np.random.seed(1337)
 
@@ -32,8 +27,6 @@ num_epochs = 600
 batch_size = 64
 num_heads = 4
 N = 172
-h = 0
-w = num_heads
 timestep = 5
 
 model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=1, is_seq=False)
@@ -53,15 +46,10 @@ semantic_train, semantic_test = semantic[:len_train], semantic[-len_test:]
 geo_train, geo_test = geo[:len_train], geo[-len_test:]
 
 X_train = [X_train, weather_train, semantic_train, geo_train]
-
 X_test = [X_test, weather_test, semantic_test, geo_test]
 
 
-
-
-
-
-
+# learning rate scheduler
 def scheduler(epoch):
     if epoch < 400:
         return learning_rate

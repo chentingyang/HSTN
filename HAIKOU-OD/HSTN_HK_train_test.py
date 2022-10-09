@@ -50,6 +50,7 @@ X_train = [X_train, weather_train, semantic_train, geo_train]
 X_test = [X_test, weather_test, semantic_test, geo_test]
 
 
+# learning rate scheduler
 def scheduler(epoch):
     if epoch < 400:
         return learning_rate

@@ -50,7 +50,7 @@ X_train = [X_train, weather_train, semantic_train, geo_train]
 X_test = [X_test, weather_test, semantic_test, geo_test]
 
 
-# 改变学习率
+# learning rate scheduler
 def scheduler(epoch):
     if epoch < 400:
         return learning_rate
@@ -75,17 +75,16 @@ def create_model():
         return model
 
 
-# 使用snoop装饰器
+
 @pysnooper.snoop()
 def train(change_lr=True):
     model = create_model()
     print(model.summary())
-    # 共训练700个epoch, bs=64
-    if change_lr:  # 阶段性改变lr
+    if change_lr:  
 
         model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True, callbacks=[change_Lr])
 
-    else:  # 不改变lr
+    else:  
         model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True)
 
     model.save_weights('/home/cty/py_file/CSTN-master/CSTN-master/model_dir/HSTN_model_NY.h5')

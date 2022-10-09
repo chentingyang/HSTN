@@ -41,8 +41,6 @@ geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))
 len_train = (X.shape[0] - len_test) // batch_size * batch_size
 
 X_train, X_test = X[:len_train], X[-len_test:]
-np.set_printoptions(threshold=np.inf)
-print(np.reshape(X_train[10][0][11], 75))
 Y_train, Y_test = Y[:len_train], Y[-len_test:]
 weather_train, weather_test = weather[:len_train], weather[-len_test:]
 semantic_train, semantic_test = semantic[:len_train], semantic[-len_test:]

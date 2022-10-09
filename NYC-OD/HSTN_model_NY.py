@@ -271,7 +271,7 @@ class Encoder(tf.keras.Model):
         x2_nebh = Sequence_GCN(x1_nebh, geo_neighbor, self.dim)
         nebh = tf.keras.layers.Dropout(self.rate)(x2_nebh)
 
-        # semantic relationship unit
+        # flow relationship unit
         x1_seman = Sequence_GCN(data, sem_neighbor, self.dim)
         x2_seman = Sequence_GCN(x1_seman, sem_neighbor, self.dim)
         seman = tf.keras.layers.Dropout(self.rate)(x2_seman)

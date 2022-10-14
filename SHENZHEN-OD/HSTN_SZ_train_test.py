@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from utils.dataset_his import load_data
+from utils.dataset_his import load_data, load_data_seq
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.python.keras.callbacks import LearningRateScheduler
@@ -28,16 +28,18 @@ batch_size = 64
 num_heads = 4
 N = 172
 timestep = 5
+SEQ_LEN = 5
 
-model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=1, is_seq=False)
+model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=1, is_seq=False) # for short-term prediction
+#model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True) # for long-term prediction
 
 model = model.call()
 
 #split train / test
-X, Y, weather, semantic, geo = load_data(odmax, timestep)
+X, Y, weather, semantic, geo = load_data(odmax, timestep) # for short-term prediction
+#X, Y, weather, semantic, geo = load_data_seq(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
 geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))
 len_train = (X.shape[0] - len_test) // batch_size * batch_size 
-
 
 X_train, X_test = X[:len_train], X[-len_test:]
 Y_train, Y_test = Y[:len_train], Y[-len_test:]

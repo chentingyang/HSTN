@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from utils.dataset_NY_his import load_data
+from utils.dataset_NY_his import load_data, load_data_seq
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.python.keras.callbacks import LearningRateScheduler
@@ -29,13 +29,16 @@ len_test = T * days_test
 learning_rate = 0.001
 num_epochs = 600
 batch_size = 64
+SEQ_LEN = 5
 
-model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, is_seq=False)
+model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, is_seq=False) # for short-term prediction
+#model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True) # for long-term prediction
 
 model = model.call()
 
 # split train / test
-X, Y, semantic, geo, weather = load_data(odmax, timestep)
+X, Y, semantic, geo, weather = load_data(odmax, timestep) # for short-term prediction
+#X, Y, semantic, geo, weather = load_data_seq(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
 geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))  # (len, t, N, N)
 len_train = (X.shape[0] - len_test) // batch_size * batch_size  # 14528
 
@@ -46,7 +49,6 @@ semantic_train, semantic_test = semantic[:len_train], semantic[-len_test:]
 geo_train, geo_test = geo[:len_train], geo[-len_test:]
 
 X_train = [X_train, weather_train, semantic_train, geo_train]
-
 X_test = [X_test, weather_test, semantic_test, geo_test]
 
 

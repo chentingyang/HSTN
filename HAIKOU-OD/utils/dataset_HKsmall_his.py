@@ -85,8 +85,8 @@ def load_data(odmax, timestep, scaler=True):
         s = (timestep, map_height * map_width, map_height * map_width), semantic neb_matrix sequence
         geo = (map_height * map_width, map_height * map_width), adjacency neb_matrix
     '''
-    oddata = '../data/oddatasmall.npy'
-    weather = '../data/weather.npy'
+    oddata = './data/oddatasmall.npy'
+    weather = './data/weather.npy'
 
     print("*************************")
     print("load data")
@@ -96,9 +96,6 @@ def load_data(odmax, timestep, scaler=True):
 
     print("*************************")
     print("load data done")
-    print("*************************")
-    print("*************************")
-    print("generate sequence")
     print("*************************")
 
     sets = len(oddata.keys())
@@ -155,8 +152,8 @@ def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
         s = (timestep, map_height * map_width, map_height * map_width), semantic neb_matrix sequence
         geo = (map_height * map_width, map_height * map_width), adjacency neb_matrix
     '''
-    oddata = '../data/oddatasmall.npy'
-    weather = '../data/weather.npy'
+    oddata = './data/oddatasmall.npy'
+    weather = './data/weather.npy'
 
     print("*************************")
     print("load data")

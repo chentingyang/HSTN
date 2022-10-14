@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
-#from utils.dataset_HKsmall_his import load_data
-from utils.dataset_HKbig_his import load_data
+#from utils.dataset_HKsmall_his import load_data, load_data_seq
+from utils.dataset_HKbig_his import load_data, load_data_seq
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
 from tensorflow.python.keras.callbacks import LearningRateScheduler
@@ -30,13 +30,19 @@ len_test = T * days_test
 learning_rate = 0.001
 num_epochs = 600
 batch_size = 64
+SEQ_LEN = 5
 
-# model = HSTN_model_HK.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, is_seq=False, is_big=False)
-model = HSTN_model_HK.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, is_seq=False, is_big=True)
+
+model = HSTN_model_HK.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, is_seq=False, is_big=True) # for short-term prediction
+#model = HSTN_model_HK.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, is_seq=False, is_big=False)
+#model = HSTN_model_HK.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True, is_big=True) # for long-term prediction
+#model = HSTN_model_HK.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True, is_big=False)
+
 model = model.call()
 
 # split train / test
-X, Y, weather, semantic, geo = load_data(odmax, timestep)
+X, Y, weather, semantic, geo = load_data(odmax, timestep) # for short-term prediction
+#X, Y, weather, semantic, geo = load_data(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
 geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))
 len_train = (X.shape[0] - len_test) // batch_size * batch_size
 

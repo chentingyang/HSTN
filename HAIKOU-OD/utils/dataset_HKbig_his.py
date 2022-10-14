@@ -137,10 +137,6 @@ def load_data(odmax, timestep, scaler=True):
     w = np.concatenate(w)
     s = np.concatenate(s)
 
-    print("*************************")
-    print("generate sequence done")
-    print("*************************")
-
     return o, y, s, geo, w
 
 def load_data_seq(odmax, timestep, seq_out_len, scaler=True):

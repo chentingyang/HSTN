@@ -42,9 +42,9 @@ def load_data(odmax, timestep, scaler=True):
         s = (timestep, num_nodes, num_nodes), semantic neb_matrix sequence
         geo = (num_nodes, num_nodes), adjacency neb_matrix
     '''
-    oddata = '../data/oddata.npy'
-    weather = '../data/weatherdata.npy'
-    matrix = '../data/matrix.npy'
+    oddata = './data/oddata.npy'
+    weather = './data/weatherdata.npy'
+    matrix = './data/matrix.npy'
 
     print("*************************")
     print("load data")
@@ -54,9 +54,6 @@ def load_data(odmax, timestep, scaler=True):
     matrix = np.load(matrix, allow_pickle=True, encoding='bytes')[()]
     print("*************************")
     print("load data done")
-    print("*************************")
-    print("*************************")
-    print("generate sequence")
     print("*************************")
 
     # generate semantic neb_matrix (based on the bidirectional traffic flow)
@@ -97,10 +94,6 @@ def load_data(odmax, timestep, scaler=True):
     w = np.concatenate(w)
     s = np.concatenate(s)
 
-    print("*************************")
-    print("generate sequence done")
-    print("*************************")
-
     return o, y, w, s, geo
 
 def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
@@ -112,9 +105,9 @@ def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
         s = (timestep, num_nodes, num_nodes), semantic neb_matrix sequence
         geo = (num_nodes, num_nodes), adjacency neb_matrix
     '''
-    oddata = '../data/oddata.npy'
-    weather = '../data/weatherdata.npy'
-    matrix = '../data/matrix.npy'
+    oddata = './data/oddata.npy'
+    weather = './data/weatherdata.npy'
+    matrix = './data/matrix.npy'
 
     print("*************************")
     print("load data")

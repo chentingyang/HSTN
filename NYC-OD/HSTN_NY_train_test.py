@@ -67,7 +67,7 @@ change_Lr = LearningRateScheduler(scheduler)
 
 def create_model():
     try:
-        model_file = '/home/cty/py_file/CSTN-master/CSTN-master/model_dir/HSTN_model_NY.h5'
+        model_file = './model_dir/HSTN_model_NY.h5'
         print("loading: " + str(model_file))
         model.load_weights(model_file)
         return model
@@ -89,7 +89,7 @@ def train(change_lr=True):
     else:  
         model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True)
 
-    model.save_weights('/home/cty/py_file/CSTN-master/CSTN-master/model_dir/HSTN_model_NY.h5')
+    model.save_weights('./model_dir/HSTN_model_NY.h5')
 
 
 def evaluate():

@@ -146,7 +146,7 @@ def load_data(odmax, timestep, scaler=True):
     return o, y, s, geo, w
 
 
-def load_data(odmax, timestep, seq_out_len, scaler=True):
+def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
     '''
         expectation:
         o = (sample, timestep, map_height * map_width, map_height, map_width), od data sequence

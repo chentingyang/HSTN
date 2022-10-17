@@ -9,7 +9,6 @@ from datetime import datetime
 from sklearn.preprocessing import normalize, StandardScaler
 
 np.random.seed(1337)  # for reproducibility
-T = 48  # number of time intervals in one day
 map_height = 15
 map_width = 5
 map_hw = map_height * map_width
@@ -193,11 +192,11 @@ def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
         oddata_set = oddata[i]
         weather_set = weather[i]
 
-        o.append(np.concatenate([oddata_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        o.append(np.concatenate([oddata_set[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
         y.append( \
-            np.concatenate([oddata_set[T+i+timestep:i-timestep, newaxis, ...] for i in range(seq_out_len)], axis=1))
-        w.append(np.concatenate([weather_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        s.append(np.concatenate([semantic[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+            np.concatenate([oddata_set[i+timestep:i-timestep, newaxis, ...] for i in range(seq_out_len)], axis=1))
+        w.append(np.concatenate([weather_set[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        s.append(np.concatenate([semantic[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
     o = np.concatenate(o)
     y = np.concatenate(y)

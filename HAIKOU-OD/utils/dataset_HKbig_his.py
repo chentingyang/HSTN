@@ -126,10 +126,10 @@ def load_data(odmax, timestep, scaler=True):
         oddata_set = oddata[i]
         weather_set = weather[i]
 
-        o.append(np.concatenate([oddata_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        y.append(oddata_set[T + timestep:, ...])
-        w.append(np.concatenate([weather_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        s.append(np.concatenate([semantic[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        o.append(np.concatenate([oddata_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        y.append(oddata_set[timestep:, ...])
+        w.append(np.concatenate([weather_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        s.append(np.concatenate([semantic[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
     o = np.concatenate(o)
     y = np.concatenate(y)

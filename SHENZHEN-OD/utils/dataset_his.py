@@ -10,7 +10,6 @@ from sklearn.preprocessing import normalize, StandardScaler
 
 np.random.seed(1337)  # for reproducibility
 
-T = 33  # number of time intervals in one day
 N = 172
 odmax = 988
 
@@ -84,10 +83,10 @@ def load_data(odmax, timestep, scaler=True):
         oddata_set = oddata[i]
         weather_set = weather[i]
 
-        o.append(np.concatenate([oddata_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        y.append(oddata_set[T + timestep:, ...])
-        w.append(np.concatenate([weather_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        s.append(np.concatenate([semantic[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        o.append(np.concatenate([oddata_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        y.append(oddata_set[timestep:, ...])
+        w.append(np.concatenate([weather_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        s.append(np.concatenate([semantic[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
     o = np.concatenate(o)
     y = np.concatenate(y)
@@ -150,11 +149,11 @@ def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
         oddata_set = oddata[i]
         weather_set = weather[i]
 
-        o.append(np.concatenate([oddata_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        o.append(np.concatenate([oddata_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
         y.append( \
-            np.concatenate([oddata_set[T+i+timestep:i-timestep, newaxis, ...] for i in range(seq_out_len)], axis=1))
-        w.append(np.concatenate([weather_set[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        s.append(np.concatenate([semantic[T + i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+            np.concatenate([oddata_set[i+timestep:i-timestep, newaxis, ...] for i in range(seq_out_len)], axis=1))
+        w.append(np.concatenate([weather_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+        s.append(np.concatenate([semantic[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
     o = np.concatenate(o)
     y = np.concatenate(y)

@@ -91,18 +91,16 @@ def load_data(odmax, timestep, scaler=True):
     print("*************************")
     print("load data")
     print("*************************")
-    oddata = np.load(oddata, allow_pickle=True, encoding='bytes')[()]
-    weather = np.load(weather, allow_pickle=True, encoding='bytes')[()]
+    oddata = np.load(oddata, allow_pickle=True, encoding='bytes')
+    weather = np.load(weather, allow_pickle=True, encoding='bytes')
 
     print("*************************")
     print("load data done")
     print("*************************")
 
-    sets = len(oddata.keys())
 
     # generate semantic neb_matrix (based on the bidirectional traffic flow)
-    data = np.array(oddata[0])
-    data = np.reshape(data, (-1, N, N))
+    data = np.reshape(oddata, (-1, N, N))
     semantic = []
     for graph in data:
         semantic.append(generate_dynamic_adj_matrix(graph))
@@ -113,23 +111,22 @@ def load_data(odmax, timestep, scaler=True):
     geo = generate_adj_matrix()
 
     if scaler:
-        for i in oddata.keys():
-            oddata[i] = oddata[i] * 2.0 / odmax - 1.0  # (-1, 1)
-            # oddata[i] = (oddata[i] - mean) / std  #standardscaler
+        oddata = oddata * 2.0 / odmax - 1.0  # (-1, 1)
+        # oddata = (oddata - mean) / std  #standardscaler
 
     o = []
     w = []
     y = []
     s = []
 
-    for i in oddata.keys():
-        oddata_set = oddata[i]
-        weather_set = weather[i]
 
-        o.append(np.concatenate([oddata_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        y.append(oddata_set[timestep:, ...])
-        w.append(np.concatenate([weather_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        s.append(np.concatenate([semantic[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+    oddata_set = oddata
+    weather_set = weather
+
+    o.append(np.concatenate([oddata_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+    y.append(oddata_set[timestep:, ...])
+    w.append(np.concatenate([weather_set[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
+    s.append(np.concatenate([semantic[i:i - timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
     o = np.concatenate(o)
     y = np.concatenate(y)
@@ -153,8 +150,8 @@ def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
     print("*************************")
     print("load data")
     print("*************************")
-    oddata = np.load(oddata, allow_pickle=True, encoding='bytes')[()]
-    weather = np.load(weather, allow_pickle=True, encoding='bytes')[()]
+    oddata = np.load(oddata, allow_pickle=True, encoding='bytes')
+    weather = np.load(weather, allow_pickle=True, encoding='bytes')
 
     print("*************************")
     print("load data done")
@@ -163,11 +160,9 @@ def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
     print("generate sequence")
     print("*************************")
 
-    sets = len(oddata.keys())
 
     # generate semantic neb_matrix (based on the bidirectional traffic flow)
-    data = np.array(oddata[0])
-    data = np.reshape(data, (-1, N, N))
+    data = np.reshape(oddata, (-1, N, N))
     semantic = []
     for graph in data:
         semantic.append(generate_dynamic_adj_matrix(graph))
@@ -178,24 +173,22 @@ def load_data_seq(odmax, timestep, seq_out_len, scaler=True):
     geo = generate_adj_matrix()
 
     if scaler:
-        for i in oddata.keys():
-            oddata[i] = oddata[i] * 2.0 / odmax - 1.0  # (-1, 1)
-            # oddata[i] = (oddata[i] - mean) / std  #standardscaler
+        oddata = oddata * 2.0 / odmax - 1.0  # (-1, 1)
+        # oddata = (oddata - mean) / std  #standardscaler
 
     o = []
     w = []
     y = []
     s = []
 
-    for i in oddata.keys():
-        oddata_set = oddata[i]
-        weather_set = weather[i]
+    oddata_set = oddata
+    weather_set = weather
 
-        o.append(np.concatenate([oddata_set[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        y.append( \
-            np.concatenate([oddata_set[i+timestep:i-timestep, newaxis, ...] for i in range(seq_out_len)], axis=1))
-        w.append(np.concatenate([weather_set[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
-        s.append(np.concatenate([semantic[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
+    o.append(np.concatenate([oddata_set[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
+    y.append( \
+        np.concatenate([oddata_set[i+timestep:i-timestep, newaxis, ...] for i in range(seq_out_len)], axis=1))
+    w.append(np.concatenate([weather_set[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
+    s.append(np.concatenate([semantic[i:i - 2*timestep, newaxis, ...] for i in range(timestep)], axis=1))
 
     o = np.concatenate(o)
     y = np.concatenate(y)

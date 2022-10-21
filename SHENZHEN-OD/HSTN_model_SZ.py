@@ -313,25 +313,25 @@ class Decoder(tf.keras.Model):
         # attention
         self.attention = BahdanauAttention(self.dim)
 
-        def call(self, x, periodic_input, dec_state, enc_output):
+    def call(self, x, periodic_input, dec_state, enc_output):
 
-            context_vector, attention_weights = self.attention.call(dec_state, enc_output)
+        context_vector, attention_weights = self.attention.call(dec_state, enc_output)
 
-            # concat&fc
-            dense_inp = tf.concat([x, periodic_input], axis=1)
-            dense_out = tf.keras.layers.Dense(self.N, activation='relu')(dense_inp)
+        # concat&fc
+        dense_inp = tf.concat([x, periodic_input], axis=1)
+        dense_out = tf.keras.layers.Dense(self.N, activation='relu')(dense_inp)
 
-            gru_inp = tf.concat([tf.expand_dims(context_vector, 1), tf.expand_dims(dense_out, 1)], axis=-1)
+        gru_inp = tf.concat([tf.expand_dims(context_vector, 1), tf.expand_dims(dense_out, 1)], axis=-1)
 
-            gru_out, state = self.gru(gru_inp)
+        gru_out, state = self.gru(gru_inp)
 
-            gru_out = tf.reshape(gru_out, (-1, gru_out.shape[2]))
+        gru_out = tf.reshape(gru_out, (-1, gru_out.shape[2]))
 
-            gru_out = tf.keras.layers.Dropout(self.rate)(gru_out)
-            output = tf.keras.layers.Dense(self.N, activation='tanh')(gru_out)
-            output = tf.reshape(output, (-1, self.N, self.N))
+        gru_out = tf.keras.layers.Dropout(self.rate)(gru_out)
+        output = tf.keras.layers.Dense(self.N, activation='tanh')(gru_out)
+        output = tf.reshape(output, (-1, self.N, self.N))
 
-            return output, state, attention_weights
+        return output, state, attention_weights
 
 
 class AttnSeq2Seq(tf.keras.layers.Layer):

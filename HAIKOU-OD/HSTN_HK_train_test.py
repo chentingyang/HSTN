@@ -42,7 +42,7 @@ model = model.call()
 
 # split train / test
 X, Y, semantic, geo, weather = load_data(odmax, timestep) # for short-term prediction
-#X, Y, semantic, geo, weather = load_data(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
+#X, Y, semantic, geo, weather = load_data_seq(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
 geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))
 len_train = (X.shape[0] - len_test) // batch_size * batch_size
 

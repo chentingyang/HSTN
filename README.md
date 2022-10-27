@@ -2,15 +2,15 @@
 This is a Tensorflow implementation of Origin-Destination Traffic Prediction based on Hybrid Spatio-Temporal Network.
 
 # Requirements
-Python = 3.8
+python==3.8.5
 
-Keras = 2.2.0
+keras==2.2.0
 
-Pandas = 1.2.3
+pandas==1.2.3
 
-Tensorflow = 2.2.0
+tensorflow=2.2.0
 
-Numpy = 1.19.2
+numpy=1.19.2
 
 # Training and Testing
 cd NYC-OD

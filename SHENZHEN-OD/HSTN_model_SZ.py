@@ -241,7 +241,7 @@ class Encoder(tf.keras.Model):
         self.timestep = timestep
         self.rate = rate
         self.heads = heads
-        self.attn_layers = [AttnLayer(self.dim, self.N, self.heads, self.rate) for _ in range(2)]
+        self.attn_layers = [AttnLayer(self.dim, self.N, self.heads, self.rate) for _ in range(1)]
         self.gru = tf.keras.layers.GRU(units=self.dim, recurrent_initializer='glorot_uniform',
                                        return_sequences=True, return_state=True)
 
@@ -254,24 +254,29 @@ class Encoder(tf.keras.Model):
 
         # inherent relationship unit
         attn_data = tf.keras.layers.Dense(self.dim, activation='relu')(data)
+        attn_data = tf.keras.layers.Dropout(self.rate)(attn_data)
         attn_out = []
         for i in range(self.timestep):
             x = attn_data[:, i, :, :]
 
-            for i in range(2):
+            for i in range(1):
                 x = self.attn_layers[i](x, training=True)
             attn_out.append(x)
 
         attn_out = tf.stack(attn_out, axis=1)
+        attn_out = tf.keras.layers.Dense(self.dim)(attn_out)
+        attn_out = tf.keras.layers.Dropout(self.rate)(attn_out)
 
         # sequence_GCN
         # adjacency relationship unit
         x1_nebh = Sequence_GCN(data, geo_neighbor, self.dim)
+        x1_nebh = tf.keras.layers.Dropout(self.rate)(x1_nebh)
         x2_nebh = Sequence_GCN(x1_nebh, geo_neighbor, self.dim)
         nebh = tf.keras.layers.Dropout(self.rate)(x2_nebh)
 
         # flow relationship unit
         x1_seman = Sequence_GCN(data, sem_neighbor, self.dim)
+        x1_seman = tf.keras.layers.Dropout(self.rate)(x1_seman)
         x2_seman = Sequence_GCN(x1_seman, sem_neighbor, self.dim)
         seman = tf.keras.layers.Dropout(self.rate)(x2_seman)
 
@@ -287,12 +292,12 @@ class Encoder(tf.keras.Model):
         weather_data = tf.reshape(weath, (-1, self.timestep, self.N, self.dim))
 
         # add(GCN_out, weather, attn_out)
-        # HSTN performs better on metro data while ignoring the influence of attention
         # embedding = tf.keras.layers.add([sequence_out, weather_data])
         embedding = tf.keras.layers.add([sequence_out, weather_data, attn_out])
         embedding = tf.reshape(tf.transpose(embedding, [0, 2, 1, 3]), (-1, self.timestep, self.dim))
 
         output, state = self.gru(embedding)
+        output = tf.keras.layers.Dropout(self.rate)(output)
         return output, state, last_sequence
 
     def init_hidden_state(self):

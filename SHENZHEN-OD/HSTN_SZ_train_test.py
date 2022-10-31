@@ -66,7 +66,7 @@ def create_model():
 	try:
 		model_file = './model_dir/HSTN_model_SZ.h5'
 		print("loading: " + str(model_file))
-		model.load_weights(model_file)
+		model.load_weights(model_file, by_name=True)
 		return model
 
 	except OSError:

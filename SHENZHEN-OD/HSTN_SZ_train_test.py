@@ -15,11 +15,11 @@ session = InteractiveSession(config=config)
 
 np.random.seed(1337)
 
-#arguments
+# arguments
 dim = 128
 rate = 0.3
-odmax = 988 #value of the max element in the OD matrix
-T = 33 # number of time intervals in one day
+odmax = 988  # value of the max element in the OD matrix
+T = 33  # number of time intervals in one day
 days_test = 32
 len_test = T * days_test
 learning_rate = 0.001
@@ -30,16 +30,17 @@ N = 172
 timestep = 5
 SEQ_LEN = 5
 
-model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=1, is_seq=False) # for short-term prediction
-#model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True) # for long-term prediction
+model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=1,
+                                  is_seq=False)  # for short-term prediction
+# model = HSTN_model_SZ.AttnSeq2Seq(N, num_heads, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True) # for long-term prediction
 
 model = model.call()
 
-#split train / test
-X, Y, weather, semantic, geo = load_data(odmax, timestep) # for short-term prediction
-#X, Y, weather, semantic, geo = load_data_seq(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
+# split train / test
+X, Y, weather, semantic, geo = load_data(odmax, timestep)  # for short-term prediction
+# X, Y, weather, semantic, geo = load_data_seq(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
 geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))
-len_train = (X.shape[0] - len_test) // batch_size * batch_size 
+len_train = (X.shape[0] - len_test) // batch_size * batch_size
 
 X_train, X_test = X[:len_train], X[-len_test:]
 Y_train, Y_test = Y[:len_train], Y[-len_test:]
@@ -60,38 +61,41 @@ def scheduler(epoch):
     else:
         return learning_rate * 0.01
 
+
 change_Lr = LearningRateScheduler(scheduler)
 
-def create_model():
-	try:
-		model_file = './model_dir/HSTN_model_SZ.h5'
-		print("loading: " + str(model_file))
-		model.load_weights(model_file, by_name=True)
-		return model
 
-	except OSError:
-		print('no file')
-		return model
+def create_model():
+    try:
+        model_file = './model_dir/HSTN_model_SZ.h5'
+        print("loading: " + str(model_file))
+        model.load_weights(model_file, by_name=True)
+        return model
+
+    except OSError:
+        print('no file')
+        return model
 
 
 @pysnooper.snoop()
 def train(change_lr=True):
-	model = create_model()
-	print(model.summary())
+    model = create_model()
+    print(model.summary())
 
-	if change_lr:
+    if change_lr:
 
-		model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True, callbacks=[change_Lr])
+        model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True, callbacks=[change_Lr])
 
-	else:
-		model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True)
+    else:
+        model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True)
 
-	model.save_weights('./model_dir/HSTN_model_SZ.h5')
+    model.save_weights('./model_dir/HSTN_model_SZ.h5')
+
 
 def evaluate():
-	model = create_model()
-	print(model.evaluate(X_train, Y_train, batch_size=64, verbose=1))				
-	print(model.evaluate(X_test, Y_test, batch_size=64, verbose=1))
+    model = create_model()
+    print(model.evaluate(X_train, Y_train, batch_size=64, verbose=1))
+    print(model.evaluate(X_test, Y_test, batch_size=64, verbose=1))
 
 
 train()

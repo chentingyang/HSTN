@@ -301,6 +301,7 @@ class Encoder(tf.keras.Model):
     def init_hidden_state(self):
         return tf.zeros(shape=(Batch_Size, self.dims))
 
+
 # dynamic leaning unit
 class Decoder(tf.keras.Model):
 

@@ -303,6 +303,7 @@ class Encoder(tf.keras.Model):
     def init_hidden_state(self):
         return tf.zeros(shape=(Batch_Size, self.dims))
 
+
 # dynamic learning unit
 class Decoder(tf.keras.Model):
 
@@ -319,7 +320,6 @@ class Decoder(tf.keras.Model):
         self.attention = BahdanauAttention(self.dim)
 
     def call(self, x, periodic_input, dec_state, enc_output):
-
         context_vector, attention_weights = self.attention.call(dec_state, enc_output)
 
         # concat&fc
@@ -355,7 +355,7 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         self.encoder = Encoder(N, self.heads, self.dim, self.rate, self.timestep)
         self.decoder = Decoder(self.dim, N, rate)
         self.attn_layers = [AttnLayer(self.N, self.N, self.heads, self.rate) for _ in
-                            range(2)]  
+                            range(2)]
 
     def call(self):
         data = tf.keras.Input(shape=(self.timestep, self.N, self.N))

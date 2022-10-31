@@ -304,7 +304,8 @@ class Encoder(tf.keras.Model):
     def init_hidden_state(self):
         return tf.zeros(shape=(Batch_Size, self.dims))
 
-# dynamic learning unit 
+
+# dynamic learning unit
 class Decoder(tf.keras.Model):
 
     def __init__(self, out_dim, N, h, w, rate=0.3):
@@ -356,7 +357,7 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         self.encoder = Encoder(N, h, w, self.dim, rate, timestep)
         self.decoder = Decoder(self.dim, N, h, w, rate)
         self.attn_layers = [AttnLayer(self.N, self.N, self.w, self.rate) for _ in
-                            range(2)]  
+                            range(2)]
         self.out_seq_len = out_seq_len
         self.is_seq = is_seq
         self.is_big = is_big
@@ -397,24 +398,24 @@ class AttnSeq2Seq(tf.keras.layers.Layer):
         if self.is_seq == False:  # single-step
             if self.is_big == True:  # large map
                 model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                            metrics=[Metrics_big.rmse, Metrics_big.mae,
-                                    Metrics_big.o_rmse, Metrics_big.o_mae,
-                                    Metrics_big.d_rmse, Metrics_big.d_mae])
+                              metrics=[Metrics_big.rmse, Metrics_big.mae,
+                                       Metrics_big.o_rmse, Metrics_big.o_mae,
+                                       Metrics_big.d_rmse, Metrics_big.d_mae])
             else:  # small map
                 model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                            metrics=[Metrics_small.rmse, Metrics_small.mae,
-                                    Metrics_small.o_rmse, Metrics_small.o_mae,
-                                    Metrics_small.d_rmse, Metrics_small.d_mae])
+                              metrics=[Metrics_small.rmse, Metrics_small.mae,
+                                       Metrics_small.o_rmse, Metrics_small.o_mae,
+                                       Metrics_small.d_rmse, Metrics_small.d_mae])
         else:  # multi-steps
             if self.is_big == True:
                 model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                            metrics=[Metrics_seq_big.rmse, Metrics_seq_big.mae,
-                                    Metrics_seq_big.o_rmse, Metrics_seq_big.o_mae,
-                                    Metrics_seq_big.d_rmse, Metrics_seq_big.d_mae])
+                              metrics=[Metrics_seq_big.rmse, Metrics_seq_big.mae,
+                                       Metrics_seq_big.o_rmse, Metrics_seq_big.o_mae,
+                                       Metrics_seq_big.d_rmse, Metrics_seq_big.d_mae])
             else:
                 model.compile(loss=self.loss, optimizer=tf.keras.optimizers.Adam(0.001),
-                            metrics=[Metrics_seq_small.rmse, Metrics_seq_small.mae,
-                                    Metrics_seq_small.o_rmse, Metrics_seq_small.o_mae,
-                                    Metrics_seq_small.d_rmse, Metrics_seq_small.d_mae])
+                              metrics=[Metrics_seq_small.rmse, Metrics_seq_small.mae,
+                                       Metrics_seq_small.o_rmse, Metrics_seq_small.o_mae,
+                                       Metrics_seq_small.d_rmse, Metrics_seq_small.d_mae])
 
         return model

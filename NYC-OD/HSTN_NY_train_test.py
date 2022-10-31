@@ -31,14 +31,15 @@ num_epochs = 600
 batch_size = 64
 SEQ_LEN = 5
 
-model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1, is_seq=False) # for short-term prediction
-#model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True) # for long-term prediction
+model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=1,
+                                  is_seq=False)  # for short-term prediction
+# model = HSTN_model_NY.AttnSeq2Seq(N, h, w, dim, rate, timestep, out_seq_len=SEQ_LEN, is_seq=True) # for long-term prediction
 
 model = model.call()
 
 # split train / test
-X, Y, semantic, geo, weather = load_data(odmax, timestep) # for short-term prediction
-#X, Y, semantic, geo, weather = load_data_seq(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
+X, Y, semantic, geo, weather = load_data(odmax, timestep)  # for short-term prediction
+# X, Y, semantic, geo, weather = load_data_seq(odmax, timestep, seq_out_len=SEQ_LEN) # for long-term prediction
 geo = np.tile(np.reshape(geo, (1, 1, N, N)), (X.shape[0], X.shape[1], 1, 1))  # (len, t, N, N)
 len_train = (X.shape[0] - len_test) // batch_size * batch_size  # 14528
 
@@ -77,16 +78,15 @@ def create_model():
         return model
 
 
-
 @pysnooper.snoop()
 def train(change_lr=True):
     model = create_model()
     print(model.summary())
-    if change_lr:  
+    if change_lr:
 
         model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True, callbacks=[change_Lr])
 
-    else:  
+    else:
         model.fit(X_train, Y_train, verbose=1, batch_size=64, epochs=num_epochs, shuffle=True)
 
     model.save_weights('./model_dir/HSTN_model_NY.h5')

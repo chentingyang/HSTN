@@ -1,5 +1,5 @@
 # HSTN
-This is a Tensorflow implementation of Origin-Destination Traffic Prediction based on Hybrid Spatio-Temporal Network.
+This is a Tensorflow implementation of Origin-Destination Traffic Prediction based on Hybrid Spatio-Temporal Network (ICDM 2022).
 
 # Requirements
 python==3.8.5   
